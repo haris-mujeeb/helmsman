@@ -1,0 +1,10 @@
+ws/build/
+ws/install/
+ws/log/
+
+.vscode/
+*.swp
+.DS_Store
+
+__pycache__/
+*.pyc
