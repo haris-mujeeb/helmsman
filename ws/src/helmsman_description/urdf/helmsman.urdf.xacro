@@ -300,4 +300,6 @@
         <origin xyz="0 0 0" rpy="${-pi/2} 0 ${-pi/2}"/>
     </joint>
 
+    <xacro:include filename="$(find helmsman_description)/urdf/helmsman.gazebo.xacro"/>
+
 </robot>

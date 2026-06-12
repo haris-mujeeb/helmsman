@@ -1,0 +1,42 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro">
+
+    <!-- Frictionless casters: the sphere slides like an ideal caster -->
+    <xacro:macro name="caster_friction" params="link_name">
+        <gazebo reference="${link_name}">
+            <mu1>0.0</mu1>
+            <mu2>0.0</mu2>
+        </gazebo>
+    </xacro:macro>
+    <xacro:caster_friction link_name="front_left_caster_link"/>
+    <xacro:caster_friction link_name="front_right_caster_link"/>
+    <xacro:caster_friction link_name="rear_left_caster_link"/>
+    <xacro:caster_friction link_name="rear_right_caster_link"/>
+
+    <!-- Drive wheels: high friction so they grip -->
+    <gazebo reference="left_wheel_link">
+        <mu1>1.0</mu1>
+        <mu2>1.0</mu2>
+    </gazebo>
+    <gazebo reference="right_wheel_link">
+        <mu1>1.0</mu1>
+        <mu2>1.0</mu2>
+    </gazebo>
+
+    <!-- Differential drive controller -->
+    <gazebo>
+        <plugin filename="gz-sim-diff-drive-system" name="gz::sim::systems::DiffDrive">
+            <left_joint>left_wheel_joint</left_joint>
+            <right_joint>right_wheel_joint</right_joint>
+            <wheel_separation>${body_width + wheel_width + 0.01}</wheel_separation>
+            <wheel_radius>${wheel_radius}</wheel_radius>
+            <odom_publish_frequency>30</odom_publish_frequency>
+            <topic>cmd_vel</topic>
+            <odom_topic>odom</odom_topic>
+            <frame_id>odom</frame_id>
+            <child_frame_id>base_footprint</child_frame_id>
+            <tf_topic>/tf</tf_topic>
+        </plugin>
+    </gazebo>
+
+</robot>
