@@ -1,0 +1,215 @@
+<?xml version="1.0"?>
+<sdf version="1.10"
+    xmlns:xacro="http://www.ros.org/wiki/xacro">
+    <world name="warehouse">
+
+        <physics name="1ms" type="ignored">
+            <max_step_size>0.001</max_step_size>
+            <real_time_factor>1.0</real_time_factor>
+        </physics>
+
+        <plugin filename="gz-sim-physics-system" name="gz::sim::systems::Physics"/>
+        <plugin filename="gz-sim-user-commands-system" name="gz::sim::systems::UserCommands"/>
+        <plugin filename="gz-sim-scene-broadcaster-system" name="gz::sim::systems::SceneBroadcaster"/>
+        <plugin filename="gz-sim-sensors-system" name="gz::sim::systems::Sensors">
+            <render_engine>ogre2</render_engine>
+        </plugin>
+
+        <light type="directional" name="sun">
+            <cast_shadows>true</cast_shadows>
+            <pose>0 0 10 0 0 0</pose>
+            <diffuse>1 1 1 1</diffuse>
+            <specular>0.3 0.3 0.3 1</specular>
+            <direction>-0.5 0.3 -1</direction>
+        </light>
+
+        <model name="ground_plane">
+            <static>true</static>
+            <link name="link">
+                <collision name="collision">
+                    <geometry>
+                        <plane>
+                            <normal>0 0 1</normal>
+                            <size>80 80</size>
+                        </plane>
+                    </geometry>
+                </collision>
+                <visual name="visual">
+                    <geometry>
+                        <plane>
+                            <normal>0 0 1</normal>
+                            <size>80 80</size>
+                        </plane>
+                    </geometry>
+                    <material>
+                        <ambient>0.35 0.35 0.35 1</ambient>
+                        <diffuse>0.45 0.45 0.45 1</diffuse>
+                    </material>
+                </visual>
+            </link>
+        </model>
+
+        <!-- ============ MACROS ============ -->
+
+        <!-- A wall segment: centered at (x,y), given length, rotated by yaw -->
+        <xacro:macro name="wall" params="name x y length yaw:=0">
+            <model name="${name}">
+                <static>true</static>
+                <pose>${x} ${y} 1 0 0 ${yaw}</pose>
+                <link name="link">
+                    <collision name="c">
+                        <geometry>
+                            <box>
+                                <size>${length} 0.2 2</size>
+                            </box>
+                        </geometry>
+                    </collision>
+                    <visual name="v">
+                        <geometry>
+                            <box>
+                                <size>${length} 0.2 2</size>
+                            </box>
+                        </geometry>
+                        <material>
+                            <ambient>0.5 0.5 0.55 1</ambient>
+                            <diffuse>0.6 0.6 0.65 1</diffuse>
+                        </material>
+                    </visual>
+                </link>
+            </model>
+        </xacro:macro>
+
+        <!-- A shelf unit: a box obstacle -->
+        <xacro:macro name="shelf" params="name x y length:=6 depth:=1">
+            <model name="${name}">
+                <static>true</static>
+                <pose>${x} ${y} 0.75 0 0 0</pose>
+                <link name="link">
+                    <collision name="c">
+                        <geometry>
+                            <box>
+                                <size>${length} ${depth} 1.5</size>
+                            </box>
+                        </geometry>
+                    </collision>
+                    <visual name="v">
+                        <geometry>
+                            <box>
+                                <size>${length} ${depth} 1.5</size>
+                            </box>
+                        </geometry>
+                        <material>
+                            <ambient>0.4 0.3 0.2 1</ambient>
+                            <diffuse>0.5 0.35 0.2 1</diffuse>
+                        </material>
+                    </visual>
+                </link>
+            </model>
+        </xacro:macro>
+
+        <!-- A pillar: cylinder -->
+        <xacro:macro name="pillar" params="name x y">
+            <model name="${name}">
+                <static>true</static>
+                <pose>${x} ${y} 1 0 0 0</pose>
+                <link name="link">
+                    <collision name="c">
+                        <geometry>
+                            <cylinder>
+                                <radius>0.25</radius>
+                                <length>2</length>
+                            </cylinder>
+                        </geometry>
+                    </collision>
+                    <visual name="v">
+                        <geometry>
+                            <cylinder>
+                                <radius>0.25</radius>
+                                <length>2</length>
+                            </cylinder>
+                        </geometry>
+                        <material>
+                            <ambient>0.3 0.3 0.3 1</ambient>
+                            <diffuse>0.4 0.4 0.4 1</diffuse>
+                        </material>
+                    </visual>
+                </link>
+            </model>
+        </xacro:macro>
+
+        <!-- A crate: small box -->
+        <xacro:macro name="crate" params="name x y size:=0.8">
+            <model name="${name}">
+                <static>true</static>
+                <pose>${x} ${y} ${size/2} 0 0 0</pose>
+                <link name="link">
+                    <collision name="c">
+                        <geometry>
+                            <box>
+                                <size>${size} ${size} ${size}</size>
+                            </box>
+                        </geometry>
+                    </collision>
+                    <visual name="v">
+                        <geometry>
+                            <box>
+                                <size>${size} ${size} ${size}</size>
+                            </box>
+                        </geometry>
+                        <material>
+                            <ambient>0.45 0.4 0.25 1</ambient>
+                            <diffuse>0.55 0.48 0.3 1</diffuse>
+                        </material>
+                    </visual>
+                </link>
+            </model>
+        </xacro:macro>
+
+        <!-- ============ PERIMETER (L-shape) ============ -->
+        <!-- Main hall: x from -25 to 25, y from -5 to 12. South wing: x from -25 to 0, y from -17 to -5. -->
+
+        <xacro:wall name="w_north" x="0" y="12" length="50"/>
+        <xacro:wall name="w_east" x="25" y="3.5" length="17" yaw="${pi/2}"/>
+        <xacro:wall name="w_south_e" x="12.5" y="-5" length="25"/>
+        <xacro:wall name="w_wing_e" x="0" y="-11" length="12" yaw="${pi/2}"/>
+        <xacro:wall name="w_wing_s" x="-12.5" y="-17" length="25"/>
+        <xacro:wall name="w_west" x="-25" y="-2.5" length="29" yaw="${pi/2}"/>
+
+        <!-- ============ STORAGE AISLES (west) ============ -->
+        <!-- 5 shelf rows along x, spaced 3m in y -->
+        <xacro:shelf name="shelf_1" x="-17" y="9" length="12"/>
+        <xacro:shelf name="shelf_2" x="-17" y="6" length="12"/>
+        <xacro:shelf name="shelf_3" x="-17" y="3" length="12"/>
+        <xacro:shelf name="shelf_4" x="-17" y="0" length="12"/>
+        <xacro:shelf name="shelf_5" x="-17" y="-3" length="12"/>
+
+        <!-- ============ LOADING DOCK (east wall, with bay gaps) ============ -->
+        <!-- Short wall stubs creating bay openings, plus dock-side shelves -->
+        <xacro:shelf name="dock_1" x="21" y="9" length="3" depth="1.5"/>
+        <xacro:shelf name="dock_2" x="21" y="1" length="3" depth="1.5"/>
+        <xacro:shelf name="dock_3" x="21" y="-3" length="3" depth="1.5"/>
+
+        <!-- ============ SOUTH WING (pillar grid + crates) ============ -->
+        <xacro:pillar name="p_1" x="-20" y="-8"/>
+        <xacro:pillar name="p_2" x="-13" y="-8"/>
+        <xacro:pillar name="p_3" x="-6" y="-8"/>
+        <xacro:pillar name="p_4" x="-20" y="-14"/>
+        <xacro:pillar name="p_5" x="-13" y="-14"/>
+        <xacro:pillar name="p_6" x="-6" y="-14"/>
+
+        <xacro:crate name="c_1" x="-9" y="-11"/>
+        <xacro:crate name="c_2" x="-16" y="-11" size="1.0"/>
+        <xacro:crate name="c_3" x="-22" y="-11" size="0.6"/>
+
+        <!-- A couple of distinguishing crates in the open staging area -->
+        <xacro:crate name="c_4" x="8" y="8" size="1.0"/>
+        <xacro:crate name="c_5" x="14" y="0" size="0.7"/>
+
+        <include>
+            <uri>
+https://fuel.gazebosim.org/1.0/MovAi/models/shelf
+            </uri>
+        </include>
+
+    </world>
+</sdf>

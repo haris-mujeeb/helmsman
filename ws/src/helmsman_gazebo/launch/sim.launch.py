@@ -10,6 +10,8 @@ from launch_ros.actions import Node
 from launch_ros.parameter_descriptions import ParameterValue
 from launch.substitutions import Command, LaunchConfiguration
 from launch.conditions import IfCondition
+import tempfile
+import xacro
 
 
 def generate_launch_description():
@@ -17,7 +19,7 @@ def generate_launch_description():
     pkg_desc = get_package_share_directory("helmsman_description")
     pkg_ros_gz = get_package_share_directory("ros_gz_sim")
 
-    world_path = os.path.join(pkg_gazebo, "worlds", "empty_helmsman.sdf")
+    world_path = os.path.join(pkg_gazebo, "worlds", "warehouse.sdf")
     xacro_path = os.path.join(pkg_desc, "urdf", "helmsman.urdf.xacro")
     bridge_config = os.path.join(pkg_gazebo, "config", "bridge.yaml")
 
@@ -25,12 +27,19 @@ def generate_launch_description():
 
     rviz_config = os.path.join(pkg_gazebo, "rviz", "helmsman.rviz")
 
+    world_xacro = os.path.join(pkg_gazebo, "worlds", "warehouse.sdf.xacro")
+    # Process the xacro world into a temporary plain SDF
+    world_sdf = os.path.join(tempfile.gettempdir(), "helmsman_warehouse.sdf")
+    doc = xacro.process_file(world_xacro)
+    with open(world_sdf, "w") as f:
+        f.write(doc.toxml())
+
     # 1. Start Gazebo with our world
     gz_sim = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(
             os.path.join(pkg_ros_gz, "launch", "gz_sim.launch.py")
         ),
-        launch_arguments={"gz_args": f"-r {world_path}"}.items(),
+        launch_arguments={"gz_args": f"-r {world_sdf}"}.items(),
     )
 
     # 2. Publish the robot description + TF tree
