@@ -90,7 +90,7 @@ def generate_launch_description():
         package="helmsman_gazebo",
         executable="keyboard_teleop",
         name="keyboard_teleop",
-        parameters=[{"linear_speed": 0.4, "angular_speed": 0.8}],
+        parameters=[{"linear_speed": 1.0, "angular_speed": 0.8}],
         condition=IfCondition(LaunchConfiguration("teleop")),
         output="screen",
     )
