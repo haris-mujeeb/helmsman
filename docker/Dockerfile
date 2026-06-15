@@ -8,6 +8,7 @@ RUN apt-get update && apt-get install -y \
     git \
     nano \
     python3-pip \
+    python3-pygame \
     x11-apps \
     && rm -rf /var/lib/apt/lists/*
 

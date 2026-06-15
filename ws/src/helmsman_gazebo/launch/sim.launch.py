@@ -80,6 +80,30 @@ def generate_launch_description():
         output="screen",
     )
 
+    declare_teleop = DeclareLaunchArgument(
+        "teleop",
+        default_value="true",
+        description="Open the hold-to-drive keyboard teleop window",
+    )
+
+    teleop = Node(
+        package="helmsman_gazebo",
+        executable="keyboard_teleop",
+        name="keyboard_teleop",
+        parameters=[{"linear_speed": 0.4, "angular_speed": 0.8}],
+        condition=IfCondition(LaunchConfiguration("teleop")),
+        output="screen",
+    )
+
     return LaunchDescription(
-        [declare_rviz, gz_sim, robot_state_publisher, spawn, bridge, rviz]
+        [
+            declare_teleop,
+            declare_rviz,
+            gz_sim,
+            robot_state_publisher,
+            spawn,
+            bridge,
+            rviz,
+            teleop,
+        ]
     )
