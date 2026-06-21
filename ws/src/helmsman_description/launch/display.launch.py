@@ -1,7 +1,10 @@
+import os
+
+from ament_index_python.packages import get_package_share_directory
 from launch import LaunchDescription
+from launch.substitutions import Command, PathJoinSubstitution
 from launch_ros.actions import Node
 from launch_ros.parameter_descriptions import ParameterValue
-from launch.substitutions import Command, PathJoinSubstitution
 from launch_ros.substitutions import FindPackageShare
 
 
@@ -26,6 +29,7 @@ def generate_launch_description():
             Node(
                 package="rviz2",
                 executable="rviz2",
+                arguments=['-d', os.path.join(get_package_share_directory('helmsman_description'), 'rviz/display.rviz')]
             ),
         ]
     )
